@@ -1,0 +1,128 @@
+import React, { useState, useEffect } from 'react';
+/* Note: Assuming a standard layout library or Tailwind for the Brutalist look */
+
+const EgoCheck = () => {
+  const [items, setItems] = useState([]);
+  const [totalSaved, setTotalSaved] = useState(0);
+  const HOURLY_RATE = 25;
+
+  // TAB 1: THE INTERROGATION FORM STATE
+  const [formData, setFormData] = useState({ name: '', price: '', why1: '', why2: '', why3: '' });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const newItem = {
+      ...formData,
+      id: Date.now(),
+      createdAt: new Date(),
+      laborHours: (formData.price / HOURLY_RATE).toFixed(1),
+      status: 'LOCKED'
+    };
+    // Sync with Spaces Backend here
+    setItems([...items, newItem]);
+    alert("SENT TO 48-HOUR COLD STORAGE. COOL YOUR HEAD.");
+    setFormData({ name: '', price: '', why1: '', why2: '', why3: '' });
+  };
+
+  return (
+    <div className="bg-black min-h-screen text-white font-mono p-6">
+      <h1 className="text-6xl font-black italic text-yellow-400 mb-8 border-b-8 border-yellow-400">
+        THE EGO CHECK
+      </h1>
+
+      {/* --- TAB 1: THE INTERROGATION --- */}
+      <section className="border-4 border-white p-8 mb-10 bg-zinc-900">
+        <h2 className="text-3xl font-bold mb-4 underline">STEP 1: THE INTERROGATION</h2>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-2 gap-4">
+            <input 
+              className="bg-black border-2 border-white p-4 text-xl"
+              placeholder="ITEM NAME"
+              onChange={(e) => setFormData({...formData, name: e.target.value})}
+              required
+            />
+            <input 
+              className="bg-black border-2 border-white p-4 text-xl text-yellow-400"
+              placeholder="PRICE ($)"
+              type="number"
+              onChange={(e) => setFormData({...formData, price: e.target.value})}
+              required
+            />
+          </div>
+
+          {formData.price && (
+            <div className="bg-yellow-400 text-black p-4 font-black text-2xl animate-pulse">
+              THIS COSTS {formData.price / HOURLY_RATE} HOURS OF YOUR FINITE LIFE. 
+              IS IT WORTH IT?
+            </div>
+          )}
+
+          <div className="space-y-4">
+            <textarea className="w-full bg-black border border-zinc-500 p-2" placeholder="WHY DO I NEED THIS?" onChange={(e) => setFormData({...formData, why1: e.target.value})} required />
+            <textarea className="w-full bg-black border border-zinc-500 p-2" placeholder="WHAT HAPPENS IF I DON'T BUY IT?" onChange={(e) => setFormData({...formData, why2: e.target.value})} required />
+            <textarea className="w-full bg-black border border-zinc-500 p-2" placeholder="WHO AM I TRYING TO IMPRESS?" onChange={(e) => setFormData({...formData, why3: e.target.value})} required />
+          </div>
+
+          <button className="w-full bg-white text-black font-black py-6 text-2xl hover:bg-yellow-400 transition-colors">
+            SEND TO 48-HOUR COLD STORAGE
+          </button>
+        </form>
+      </section>
+
+      {/* --- TAB 2: COLD STORAGE --- */}
+      <section className="mb-10">
+        <h2 className="text-3xl font-bold mb-4 underline">STEP 2: COLD STORAGE</h2>
+        <div className="grid gap-6">
+          {items.map(item => {
+            const isReady = (new Date() - new Date(item.createdAt)) > (48 * 60 * 60 * 1000);
+            
+            return (
+              <div key={item.id} className="border-2 border-yellow-400 p-6 relative">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="text-4xl font-black">{item.name} — ${item.price}</h3>
+                    <p className="text-yellow-400">{item.laborHours} HOURS OF LABOR AT STAKE</p>
+                  </div>
+                  {!isReady && <span className="text-5xl">⚠️</span>}
+                </div>
+
+                <div className="mt-4 text-red-600 font-bold uppercase italic">
+                  <p>REASONING: "{item.why1}"</p>
+                  <p>CONSEQUENCE: "{item.why2}"</p>
+                  <p>EGO: "{item.why3}"</p>
+                </div>
+
+                <div className="mt-6 flex gap-4">
+                  {isReady ? (
+                    <button className="bg-green-600 p-4 font-bold">STILL WANT TO WASTE YOUR MONEY?</button>
+                  ) : (
+                    <div className="text-zinc-600 border border-zinc-600 p-4">LOCKED FOR 48 HOURS</div>
+                  )}
+                  <button 
+                    onClick={() => {
+                      setTotalSaved(prev => prev + Number(item.price));
+                      setItems(items.filter(i => i.id !== item.id));
+                      alert("FINANCIAL DISCIPLINE MAINTAINED.");
+                    }}
+                    className="bg-white text-black p-4 font-bold hover:bg-red-600 hover:text-white"
+                  >
+                    DELETE (I'M SMARTER THAN THIS)
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* --- TAB 3: THE FREEDOM FUND --- */}
+      <section className="bg-yellow-400 p-10 text-black text-center">
+        <h2 className="text-4xl font-black">THE FREEDOM FUND</h2>
+        <div className="text-8xl font-black mt-4">${totalSaved.toFixed(2)}</div>
+        <p className="text-2xl mt-2 underline font-bold text-black">TOTAL MONEY KEPT FROM THE VOID</p>
+      </section>
+    </div>
+  );
+};
+
+export default EgoCheck;
